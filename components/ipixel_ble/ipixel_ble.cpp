@@ -317,12 +317,12 @@ void IPixelBLE::write_state(light::LightState *state) {
   if (state_.mPowerState != on) {
     state_.mPowerState = on;
     if (on) {
-      queuePush( iPixelCommands::setPower(true) );
+      queuePush( iPixelCommads::setPower(true) );
       state_.effect_ = state_.mEffect;
       //state_.mEffectRestore = true;
     }
     else {
-      queuePush( iPixelCommands::setPower(false) );
+      queuePush( iPixelCommads::setPower(false) );
 	  }
   }
   if (!on) return;
@@ -344,7 +344,7 @@ void IPixelBLE::write_state(light::LightState *state) {
 
   if (state_.mBrightness != brightness) {
     state_.mBrightness = brightness;
-    queuePush( iPixelCommands::setBrightness( state_.mBrightness ) );
+    queuePush( iPixelCommads::setBrightness( state_.mBrightness ) );
   }
   
   if ((state_.mEffect != state_.effect_ || color_changed) && !is_starting()) {
@@ -354,7 +354,7 @@ void IPixelBLE::write_state(light::LightState *state) {
        upload_queue_->publish_state(0);
     }
     if (state_.mEffect == Alarm) { // restore brightness
-       queuePush( iPixelCommands::setBrightness( state_.mBrightness ) );
+       queuePush( iPixelCommads::setBrightness( state_.mBrightness ) );
     }
     state_.mEffect = state_.effect_;
     //state_.mEffectPtr = state->get_effect_by_index(state->get_current_effect_index());
@@ -362,7 +362,7 @@ void IPixelBLE::write_state(light::LightState *state) {
     switch (state_.effect_)
     {
       case None:
-        queuePush(iPixelCommands::clear());
+        queuePush(iPixelCommads::clear());
         break;
       case Time:
         state_.mShowDate = false;
@@ -501,7 +501,7 @@ void IPixelBLE::on_lambda_slot_number(float value) {
     int rotation = static_cast<int>(value)%4;
     uint16_t degree[] = {0, 90, 180, 270};
     state_.mRotation = degree[rotation];
-    return queuePush( iPixelCommands::setRotation(rotation) );
+    return queuePush( iPixelCommads::setRotation(rotation) );
   }
   if (state_.mSlotNumber != value) {
     state_.mSlotNumber = value;
@@ -573,8 +573,8 @@ void IPixelBLE::on_update_time_button_press() {
     std::strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
     ESP_LOGI(TAG, "The current date/time in Berlin is: %s", strftime_buf);
 
-    queuePush( iPixelCommands::setTime(timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec) );
-    queuePush( iPixelCommands::getFirmwareVersions() );
+    queuePush( iPixelCommads::setTime(timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec) );
+    queuePush( iPixelCommads::getFirmwareVersions() );
 }
 
 void IPixelBLE::on_play_switch(bool state) {
@@ -586,18 +586,18 @@ void IPixelBLE::on_play_switch(bool state) {
   if (play_switch_ != nullptr && play_switch_->state != state_.mPlayState) {
       play_switch_->publish_state(state_.mPlayState);
       if (state_.mPlayState) {
-        queuePush( iPixelCommands::setProgramList(state_.mProgramSlots) );
+        queuePush( iPixelCommads::setProgramList(state_.mProgramSlots) );
       } else {
         state_.mProgramSlots.clear();
         std::vector<uint8_t> live {0};
-        queuePush( iPixelCommands::setProgramList(live) );
+        queuePush( iPixelCommads::setProgramList(live) );
       }
   }
 }
 
 void IPixelBLE::text_effect() {
   if (state_.mEffect == Message || is_starting()) {
-    queuePush( iPixelCommands::showText(state_.txt_, state_.mAnimationMode, state_.mAnimationSpeed,
+    queuePush( iPixelCommads::showText(state_.txt_, state_.mAnimationMode, state_.mAnimationSpeed,
       Color{state_.mR, state_.mG, state_.mB}, state_.mTextMode, state_.mFontFlag, get_slot(),
       Color{state_.mRBack, state_.mGBack, state_.mBBack}) );
   }
@@ -611,7 +611,7 @@ void IPixelBLE::time_date_effect() {
     time(&now);
     localtime_r(&now, &timeinfo);
     int wday = timeinfo.tm_wday == 0 ? 7 : timeinfo.tm_wday;  // 1 to 7 where 7 is sunday
-    queuePush( iPixelCommands::showClock(state_.mClockStyle, wday, timeinfo.tm_year - 100, timeinfo.tm_mon + 1, timeinfo.tm_mday, state_.mShowDate, true) );
+    queuePush( iPixelCommads::showClock(state_.mClockStyle, wday, timeinfo.tm_year - 100, timeinfo.tm_mon + 1, timeinfo.tm_mday, state_.mShowDate, true) );
   }
 }
 
@@ -622,7 +622,7 @@ void IPixelBLE::load_image_effect(int8_t page) {
       if (lambda_slot_number_ != nullptr) lambda_slot_number_->publish_state(page);
     }
     Display::do_update_(); // call display lambda writer
-    queuePush( iPixelCommands::showImage( state_.framebuffer_, get_slot() ) );
+    queuePush( iPixelCommads::showImage( state_.framebuffer_, get_slot() ) );
   }
 }
 
@@ -638,7 +638,7 @@ void IPixelBLE::fill_color_effect() {
       draw_pixel_at(x, y, Color(state_.mR, state_.mG, state_.mB));
     }
   }
-  queuePush( iPixelCommands::showImage( state_.framebuffer_, get_slot() ) );
+  queuePush( iPixelCommads::showImage( state_.framebuffer_, get_slot() ) );
 }
 
 void IPixelBLE::fill_rainbow_effect() {
@@ -657,7 +657,7 @@ void IPixelBLE::fill_rainbow_effect() {
       draw_pixel_at(x, y, Color(r * 255, g * 255, b * 255));
     }
   }
-  queuePush( iPixelCommands::showImage( state_.framebuffer_, get_slot() ) );
+  queuePush( iPixelCommads::showImage( state_.framebuffer_, get_slot() ) );
 }
 
 void IPixelBLE::random_pixel_effect() {
@@ -668,7 +668,7 @@ void IPixelBLE::random_pixel_effect() {
     uint8_t r = frand() * 255;
     uint8_t g = frand() * 255;
     uint8_t b = frand() * 255;
-    queuePush( iPixelCommands::showPixel(x, y, r, g, b) );
+    queuePush( iPixelCommads::showPixel(x, y, r, g, b) );
     is_ready_ = true; // showPixel does not send acknowledge with notification
   }
 }
@@ -676,7 +676,7 @@ void IPixelBLE::random_pixel_effect() {
 void IPixelBLE::rhythm_animation_effect() {
   if (state_.mEffect == RhythmAnimation) {
     static uint8_t animation = 0;
-    queuePush( iPixelCommands::showRhythmAnimation(state_.mSlotNumber % 2, animation) );
+    queuePush( iPixelCommads::showRhythmAnimation(state_.mSlotNumber % 2, animation) );
     is_ready_ = true; // showRhythmAnimation does not acknowledge with notification
     animation++;
     if (animation > 7) animation = 0;
@@ -689,7 +689,7 @@ void IPixelBLE::rhythm_levels_effect() {
     for (int i = 0; i < 11; i++) {
       levels[i] = frand() * 15;
     }
-    queuePush( iPixelCommands::showRhythmLevels(state_.mSlotNumber % 5, levels) );
+    queuePush( iPixelCommads::showRhythmLevels(state_.mSlotNumber % 5, levels) );
     is_ready_ = true; // showRhythmLevels does not acknowledge with notification
   }
 }
@@ -699,7 +699,7 @@ void IPixelBLE::alarm_effect() {
   uint8_t b_val[] = { 100, 50, 25, 12, 0 };
 
   if (state_.mEffect == Alarm) {
-    queuePush( iPixelCommands::setBrightness(b_val[index]) );
+    queuePush( iPixelCommads::setBrightness(b_val[index]) );
     index++;
     if (index > 4) index = 0;
   }
@@ -770,9 +770,9 @@ void IPixelBLE::del_program_list(std::string slot_csv) {
   }
 
   if (slot_list.size() > 0) {
-    queuePush( iPixelCommands::delProgramList(slot_list) );
+    queuePush( iPixelCommads::delProgramList(slot_list) );
   } else {
-    queuePush( iPixelCommands::clear() );
+    queuePush( iPixelCommads::clear() );
   }
 
   state_.mProgramSlots.clear();
@@ -814,7 +814,7 @@ void IPixelBLE::downloadTick() {
     const std::vector<uint8_t> data = buffer_.get_chunk(index);
     if (data.size() > 0) {
       //upload_queue_->publish_state(1);
-      queuePush( iPixelCommands::showImage(data, get_slot(false), index, true, buffer_.get_size(), buffer_.get_crc()) );
+      queuePush( iPixelCommads::showImage(data, get_slot(false), index, true, buffer_.get_size(), buffer_.get_crc()) );
     }
     else {
       get_slot();
