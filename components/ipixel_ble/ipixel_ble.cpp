@@ -564,7 +564,7 @@ void IPixelBLE::on_update_time_button_press() {
     char strftime_buf[64];
     struct tm timeinfo;
 
-    time(&now);
+    //time(&now);
     // Set timezone to Europe Standard Time
     setenv("TZ", "CST-1", 1);
     tzset();
